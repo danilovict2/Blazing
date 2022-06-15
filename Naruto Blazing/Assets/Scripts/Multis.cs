@@ -18,25 +18,26 @@ public class Multis : MonoBehaviour
     /*Stars for changing depending on rarity*/
     public Sprite stars3,stars4,stars5;
     /*Unit for activation*/
-    public GameObject unit;
+    public GameObject[] units;
     /*Types for changing*/
-    public Sprite bravery,wisdom,heart,body,wind;//change name for wind
+    //public Sprite bravery,wisdom,heart,body,wind;//change name for wind
     /*Contract changer*/
     SpriteRenderer unitRarity;
     /*Animations*/
-    public Animator contractTransition,contract;
+    public Animator[] contractTransition,contract;
     /*Sprites being changed*/
-    public Image stars,panel,icon,type;
-    int randomChoice;//random choice for unit
+    public Image[] stars,panel,icon,type;
+    int currentUnit = 0;
+    int[] randomChoice = new int[10];//random choice for unit
     public GameObject next;
+    int SpawnHelp = 0;
     bool firstclick = true;
     void Start() {
         int i;
         for(i=0;i<contracts.Length;++i){
-            randomChoice = Random.Range(0,100);
+            randomChoice[i] = Random.Range(0,100);
             getRarity(i);
-            contracts[i].gameObject.SetActive(true);
-            contracts[i].Play("spawnIn");
+            Invoke("createContact",i * 0.1f);
         }
         
     }
@@ -46,7 +47,10 @@ public class Multis : MonoBehaviour
             Vector2 cubeRay = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             RaycastHit2D cubeHit = Physics2D.Raycast(cubeRay, Vector2.zero);
             if(firstclick){
-                firstclick = false;
+                if(currentUnit >= 9){
+                    firstclick = false;
+                    next.SetActive(true);
+                }
                 if(cubeHit){
                     instantiateUnits();
                 }
@@ -57,54 +61,60 @@ public class Multis : MonoBehaviour
             }
         }
     }
+    void createContact(){
+        contracts[SpawnHelp].gameObject.SetActive(true);
+        contracts[SpawnHelp].Play("spawnIn");
+        ++SpawnHelp;
+    }
     void getRarity(int i){
         unitRarity = contracts[i].gameObject.GetComponent<SpriteRenderer>();
-        if(randomChoice>=0 && randomChoice<=11){
+        if(randomChoice[i]>=0 && randomChoice[i]<=11){
             unitRarity.sprite = fiveStarContact;
-        }else if(randomChoice>=12 && randomChoice<=62){
+        }else if(randomChoice[i]>=12 && randomChoice[i]<=62){
             unitRarity.sprite = fourStarContact;
         }else{
             unitRarity.sprite = threeStarContact;
         }
     }
     void instantiateUnits(){
-        /*if(randomChoice>=0 && randomChoice<=11){
+        if(randomChoice[currentUnit]>=0 && randomChoice[currentUnit]<=11){
             int randChoice = Random.Range(0,fiveStars.Length - 1);
             createFiveStar(randChoice);
-        }else if(randomChoice>=12 && randomChoice<=62){
+        }else if(randomChoice[currentUnit]>=12 && randomChoice[currentUnit]<=62){
             int randChoice = Random.Range(0,fourStars.Length - 1);
             createFourStar(randChoice);
         }else{
             int randChoice = Random.Range(0,threeStars.Length - 1);
             createThreeStar(randChoice);
-        }*/
-        //createUnit();
+        }
+        createUnit();
     }
 
     void createFiveStar(int randChoice){
-        panel.sprite = fiveStarPanel;
-        stars.sprite = stars5;
-        icon.sprite = fiveStars[randChoice];
+        panel[currentUnit].sprite = fiveStarPanel;
+        stars[currentUnit].sprite = stars5;
+        icon[currentUnit].sprite = fiveStars[randChoice];
     }
     void createFourStar(int randChoice){
-        panel.sprite = fourStarPanel;
-        stars.sprite = stars4;
-        icon.sprite = fourStars[randChoice];
+        panel[currentUnit].sprite = fourStarPanel;
+        stars[currentUnit].sprite = stars4;
+        icon[currentUnit].sprite = fourStars[randChoice];
     }
 
     void createThreeStar(int randChoice){
-        panel.sprite = threeStarPanel;
-        stars.sprite = stars3;
-        icon.sprite = threeStars[randChoice];
+        panel[currentUnit].sprite = threeStarPanel;
+        stars[currentUnit].sprite = stars3;
+        icon[currentUnit].sprite = threeStars[randChoice];
     }
     void createUnit(){
-        contractTransition.gameObject.SetActive(true);
-        contractTransition.Play("contract");
-        contract.Play("contract2");
-        Invoke("random", 0.5f);
+        Animator tmp = contractTransition[currentUnit];
+        tmp.gameObject.SetActive(true);
+        tmp.Play("contract");
+        contract[currentUnit].Play("contract2");
+        Invoke("instantiateUnit", 0.5f);
     }
-    void random(){
-        unit.SetActive(true);
-        next.SetActive(true);
+    void instantiateUnit(){
+        units[currentUnit].SetActive(true);
+        currentUnit++;
     }
 }
