@@ -1,0 +1,12 @@
+﻿using System.Collections;
+using UnityEngine;
+
+public class ClickWait : MonoBehaviour
+{
+    public IEnumerator OnMouseUp()
+    {
+        GetComponent<DragMouseMove>().enabled = false;
+		yield return new WaitForSeconds(5);
+		GetComponent<DragMouseMove>().enabled = true;
+    }
+}
