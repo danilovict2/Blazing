@@ -1,30 +1,47 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.EventSystems;
 
 public class UnitMoving : MonoBehaviour
 {
-    Vector3 drag;
-    Camera cam;
+    Vector3 mousePosition;
+    Rigidbody2D rb;
+    Vector2 direction;
+    Animator UnitAnimations;
+    float moveSpeed = 100f;
 
-    [SerializeField] float speed = 10;
+    bool canStart = false;
+    
 
-    void Start() {
-        cam = Camera.main;
+	
+	void Start () {
+		StartCoroutine(waiter());
+        rb = GetComponent<Rigidbody2D>();
+        UnitAnimations = GetComponent<Animator>();
+	}
+
+    IEnumerator waiter()
+    {
+        yield return new WaitForSeconds(2);
+        canStart = true;
     }
 
-    void OnMouseDown() {
-        drag = transform.position - GetMousePos();
-    }
+	
+	void Update () {
+		if (!canStart) return;
+        if (Input.GetMouseButton(0))
+        {
+            
+            mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            direction = (mousePosition - transform.position).normalized;
+            rb.velocity = new Vector2(direction.x * moveSpeed, direction.y * moveSpeed);
+            UnitAnimations.Play("chr_00002_move");
 
-    void OnMouseDrag() {
-        transform.position = Vector3.MoveTowards(transform.position, GetMousePos() + drag, speed * Time.deltaTime);
-    }
-
-    Vector3 GetMousePos() {
-        var mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
-        mousePos.z = 0;
-        return mousePos;
+        }
+        else {
+            rb.velocity = Vector2.zero;
+            UnitAnimations.Play("chr_00002_idle");
+        }
     }
 }
